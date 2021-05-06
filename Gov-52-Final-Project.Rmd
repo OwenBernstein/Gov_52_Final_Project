@@ -1,0 +1,418 @@
+---
+title: "Gov 52 Final Project"
+author: "Owen Bernstein"
+date: "5/4/2021"
+output: pdf_document
+---
+
+# Introduction
+```{r master_script, include = FALSE}
+
+# Loading libraries
+
+library(tidyverse)
+library(webshot)
+library(gt)
+library(readstata13)
+library(foreign)
+library(data.table)
+library(tidyr)
+library(stringi)
+library(stringr)
+library(dplyr)
+library(multiwayvcov)
+library(lmtest)
+library(stargazer)
+library(ggplot2)
+library(DataCombine)
+library(lfe)
+library(Matching)
+  
+output_path <- paste(getwd(),"/figures/",sep="") # stores results to the output file
+storewd     <- getwd() # resets working directory when necessary
+  
+# Sourcing "marginal effects function" script provided by authors
+
+    source("scripts/a.continuous_margeff_function.R")
+
+###################################################################################################
+# analysis scripts ################################################################################
+###################################################################################################
+
+source("scripts/b.summary_statistics.R")
+source("scripts/c.main_analysis.R")
+source("scripts/d.legislative_professionalism_analysis.R")
+  
+```
+
+In their paper “Legislative Term Limits and Polarization,” Michael Olson and Jon
+Rogowski explore the causal impact of the adoption of legislative term limits on
+representation in state governments.^[Replication data and code for this report
+can be accessed in the Harvard Dataverse at https://doi.org/10.7910/DVN/GDZTK8]
+The paper specifically asks how legislative term limits affect representation
+and polarization and if this relationship is modified by the professionalism of
+the legislature. The authors hypothesize that the implementation of term limits
+will increase polarization, and that the increase will be greater in more
+professional legislatures. This hypothesis is generated based on two reasons:
+
+- Firstly, the authors theorize that term limits reduce a legislator’s need to
+understand and respond to their constituency’s demands as they know that they
+will not have the possibility of a long career or repeated reelection.
+
+- Secondly, the authors theorize that qualified candidates will be less likely
+to run for positions with term limits due to the reduced job security and as a
+result parties will be more inclined to run candidates with strong ideological
+views and party loyalty.
+
+To answer the above questions, the paper uses panel data on roll call voting in
+the years between 1993 and 2016 by state as well as indicators for a divided
+government, legislative professionalism, and party competitiveness. The primary
+model used by the authors is a multiunit difference-in-difference design
+described by this linear regression model:
+
+$Y_{it} = \beta_0 + \beta_1\ Term\ limits_{it} + X_{it}\Omega + D_i + T_t + \epsilon_{it}$
+
+In the above regression, Y is the level of polarization in state i in year t,
+the term limits variable indicated whether state i had term limits in year t,
+$\Omega$ is a vector of coefficients for state-level time varied covariates
+X~it~ (divided government, legislative professionalism, party competitiveness),
+D~i~ is an indicator for state fixed effects, T~t~ is an indicator for year fixed
+effects, and $\epsilon$ is a random error term.
+
+The authors concluded that the implementation of term limits led to higher
+levels of polarization in state legislatures as evidenced by an increased
+ideological gap between the parties in voting patterns. Furthermore, the authors
+conclude that this effect is larger for more professional legislatures, those
+which have longer sessions and higher salaries. The authors also find that the
+effects of term limit appeared to be twice as large for republican legislators
+as for democratic legislators. Finally, these results were robust across a large
+number of model types and specifications.
+
+# Replication Analysis
+
+## Summary Statistics
+
+In this paper, the authors seek to understand how the implementation of term
+limits effects polarization in state legislatures. The main outcome variable is
+legislative polarization. This is a measure of polarization devised by Shor and
+McCarty (2011) which uses roll call voting to classify each legislator's voting
+behavior on an ideological score from 0-3. The main explanatory variables used
+by the authors are term limits, divided government, logged legislative
+professionalism, and party competitiveness. Term limits is a binary variable
+that takes a value of 1 in state-years in which the legislature had a term
+limit. The divided government variable is also a binary variable taking the
+value of 1 in divided legislatures. The legislative professionalism variable
+created by Squire (1992) and updated in Squire (2017), is a measure of a
+legislature’s professionalism which takes into account salary, staff, and time
+in session. Finally, the party competitiveness variable is a measure of the
+majority party’s seat share advantage. Below is a summary of each of these
+variables, specifically each variable’s mean, median, minimum, maximum, and
+standard deviation.
+
+### Recreation of Table A.1: Summary Statistics of Key Variables
+
+```{r taba1, warning=FALSE, echo=F}
+
+sumstat_sg_recreate <- stargazer(pol_dat[,c("l_diffs","house_term_limit","divided_gov",
+                                   "legprofscore","abs_diff")],
+                                 type = "text",
+                        summary.stat=c("mean","median","min","max","sd"),
+                        covariate.labels=c("Legislative Polarization","Term Limits","Divided Gov."
+                                           ,"ln(Leg. Professionalism)","Party Competitiveness"),
+                        title="Summary Statistics of Key Variables",
+                        table.layout ="-c-b-",table.placement = "!ht",
+                        label="summary_stats",
+                        no.space = T)
+
+```
+
+## Main Models
+
+To estimate the effect of term limits on legislative polarization, the authors
+use a variety of fixed effect linear models. In each model, the authors use a
+combination of the explanatory variables as well as state and year fixed effects
+to estimate legislative polarization. By including fixed effects for year and
+state, the authors seek to account for differences in legislative polarization
+caused by these dummy variables. The main models are described in Table 1.
+
+The baseline model created by the authors (column 1), is a linear regression of
+term limits on legislative polarization with fixed effects for both year and
+state.
+
+```{r, baseline_model, eval=F}
+
+# Baseline model: l_diffs is legislative polarization, term_limit_temp is term limits
+
+baseline_model <- felm(l_diffs ~ term_limit_temp |state+year|0|state, data=pol_dat)
+```
+
+The authors then create a second model in which covariates for divided
+government, legislative professionalism, and party competitiveness are added
+(column 2).
+
+\newpage
+
+```{r, extended_model, eval=F}
+
+# Extended model: legprofscore is legislative professionalism, temp_abs_diff is
+# party competitiveness
+
+extended_model <- felm(l_diffs ~ term_limit_temp
+                       +divided_gov
+                       +legprofscore
+                       +temp_abs_diff
+                   |state+year|0|state
+                   ,data=pol_dat)
+```
+
+Then, the same baseline and extended models are applied to exclusively state
+legislature houses (columns 3, 4) and senates (columns 5,6).
+
+### Recreation of Table 1: Term Limits and Polarization
+
+```{r tab1, warning=F, echo=F}
+
+panel_sg_recreate <- stargazer(pooled_nocov,pooled_cov,house_nocov,house_cov,senate_nocov,senate_cov,
+                  type = "text",
+                  add.lines = list(c("State Fixed Effects","Yes","Yes","Yes","Yes","Yes","Yes"),
+                                   c("Year Fixed Effects","Yes","Yes","Yes","Yes","Yes","Yes"),
+                                   c("Projected R Squared",round(summary(pooled_nocov)$P.r.squared,3),round(summary(pooled_cov)$P.r.squared,3)
+                                     ,round(summary(house_nocov)$P.r.squared,3),round(summary(house_cov)$P.r.squared,3)
+                                     ,round(summary(senate_nocov)$P.r.squared,3),round(summary(senate_cov)$P.r.squared,3))),
+                  notes.append = FALSE,notes.label = "",
+                  notes= "",
+                  omit.stat = c("rsq", "f", "ser","adj.rsq", "n"),font.size = "footnotesize",
+                  star.char=c("*","**"),star.cutoffs = c(0.10,0.05),digits=3,digits.extra=0,
+                  dep.var.caption="Polarization",table.placement = "!ht",
+                  dep.var.labels = c("Pooled","House","Senate"),
+                  covariate.labels=c("Term Limits","Divided Gov.",
+                                     "ln(Leg. Professionalism)","Party Competitiveness"),
+                  label="baseline_panel_analysis",
+                  table.layout ="-ld-#-tas-n",
+                  title="Term Limits and Polarization",
+                  out = "figures/panel_sg_recreate.txt",
+                  no.space = T)
+
+```
+
+As seen in the table above, the coefficient on term limits is statistically
+significant at an alpha level of 0.05 in both the baseline and extended models
+for the pooled data and house data and is not statistically significant for the
+senate data. In the pooled and house models, the effect of term limits is robust
+to the additional covariates.
+
+In every model, the effect of term limits is positive, meaning that the
+implementation of term limits is correlated with an increase in legislative
+polarization on average. The magnitude of this effect is greatest in the lower
+chambers (house) and smaller in upper chambers.
+
+Substantively, the authors theorize that the positive relationship between term
+limits and legislative polarization has two causes. The first is that
+legislators that are aware that their term is ending are less inclined to meet
+the demands of their consitutncies and will instead pursue their own ideological
+aims or the aims of their party. The second mechanism is that less qualified
+candidates, and candidates more beholden to their political party, are more
+likely to hold office in legislatures with term limits. Both of these causes
+would lead to increased polarization in voting patterns.
+
+## Models by Political Party
+
+The authors then sought to identify differential effects of term limits on
+legislative polarization for democrats and republicans. To do this, the authors
+use a second measure of legislative polarization with lower values indicating
+more liberal views and higher values indicating more Republican views. The
+extended model is recreated for each chamber-party combination. Results are
+displayed in Table 2.
+
+### Recreation of Table 2: Term Limits and Asymmetric Polarization: Party Medians
+
+```{r tab2, warning=F, echo=F}
+
+asym_sg_recreate <- stargazer(dem_pooled,dem_house,dem_senate,rep_pooled,rep_house,rep_senate,
+                     type = "text",
+                     add.lines = list(c("Chamber","Pooled","House","Senate","Pooled","House","Senate"),
+                                      c("State Fixed Effects","Yes","Yes","Yes","Yes","Yes","Yes"),
+                                      c("Year Fixed Effects","Yes","Yes","Yes","Yes","Yes","Yes"),
+                                      c("Projected R Squared",round(summary(dem_pooled)$P.r.squared,3),round(summary(dem_house)$P.r.squared,3)
+                                        ,round(summary(dem_senate)$P.r.squared,3),round(summary(rep_pooled)$P.r.squared,3)
+                                        ,round(summary(rep_house)$P.r.squared,3),round(summary(rep_senate)$P.r.squared,3))),
+                     notes.append = FALSE,notes.label = "",
+                     notes="",
+                     omit.stat = c("rsq", "f", "ser","adj.rsq"),font.size = "footnotesize",
+                     star.char=c("*","**"),star.cutoffs = c(0.10,0.05),digits=3,digits.extra=0,
+                     dep.var.labels=c("Democrats","Republicans"),
+                     dep.var.caption = c("Party Medians"),table.placement = "!ht",
+                     covariate.labels=c("Term Limits","Divided Gov.",
+                                        "ln(Leg. Professionalism)","Party Competitiveness"),
+                     label="asymmetric_polarization",
+                     table.layout ="-ld-#-tas-n",
+                     title="Term Limits and Asymmetric Polarization",
+                     out = "figures/asym_sg_recreate.txt",
+                     no.space = T)
+
+```
+
+As seen above, the coefficient on term limits is negative for all Democrats
+indicating that term limits move Democratic legislators to more liberal voting
+patterns. On the other hand, the coefficient on term limits is positive for all
+Republicans indicating that term limits move Republican legislators to more
+conservative voting patterns. Another important insight is that the magnitude of
+the coefficient is greater for Republican legislators meaning that term limits
+have a larger effect on Republicans than Democrats. Finally, the coefficient is
+only statistically significant at an alpha level of 0.05 for the pooled and
+lower house models for Republicans. Substantively, the authors argue that these
+results show that increased polarization in legislatures is primarily caused by
+a shift of Republican legislators to the ideological right.
+
+## Models for Additional Measures 
+
+After determining the effects of term limits on legislative polarization, the
+authors then sought to determine the effect of term limits on related measures
+of a legislature's effectiveness. The specific additional measures the authors
+use are party share contributions (the share of campaign contributions coming
+from political party committees) and PAC share contributions (the share of
+campaign contributions coming from political action committees.)
+
+This analysis also focuses on the effect of legislative professionalism.
+Specifically, the below models include an interaction term of legislative
+professionalism and term limits. This is included in order to determine if the
+effect of term limits differs at different levels of legislative
+professionalism. Results are displayed in table 3. 
+
+### Recreation of Table 3: Term Limits, Legislative Professionalism, and Party Influence
+
+```{r tab3, warning=F, echo=F}
+
+mech_prof_sg_recreate <- stargazer(log_legprof,pc_legprof,pac_legprof,
+                          type = "text",
+                          keep=c("house_term_limit","loglegprof"),
+                          add.lines = list(c("Controls","Yes","Yes","Yes"),
+                                           c("State Fixed Effects","Yes","Yes","Yes","Yes"),
+                                           c("Year Fixed Effects","Yes","Yes","Yes","Yes"),
+                                           c("Projected R Squared",round(summary(log_legprof)$P.r.squared,3)
+                                             ,paste(as.character(round(summary(pc_legprof)$P.r.squared,3)),"0",sep="")
+                                             ,paste(as.character(round(summary(pac_legprof)$P.r.squared,3)),"0",sep=""))),
+                          notes.append = FALSE,notes.label = "",
+                          notes="",
+                          star.char=c("*","**"),star.cutoffs = c(0.10,0.05),
+                          omit.stat = c("rsq", "f", "ser","adj.rsq"),font.size = "footnotesize",
+                          digits=3,digits.extra=0,
+                          dep.var.labels = c("Pooled Polarization","Party Contributions",
+                                             "PAC Contributions"),
+                          covariate.labels=c("Term Limits","ln(Leg. Professionalism)",
+                                             "Term Limits X ln(Professionalism)"),table.placement = "!ht",
+                          label="mechanisms_panel",
+                          table.layout ="-ld-#-tas-n",
+                          title="Term Limits, Legislative Professionalism, and Party Influence",
+                          out = "figures/mech_prof_sg_recreate.txt",
+                          no.space = T,
+                          column.sep.width = "1pt")
+
+```
+
+As seen above, the coefficient on term limits is positive and statistically
+significant at an alpha level of 0.05 for the party contributions model. This
+suggests that the implementation of term limits is correlated with an increase
+in party contributions to campaigns. On the other hand, the share of
+contributions that come from PACs decreases with term limits although the
+coefficient in this case is not statistically significant at an alpha level of
+0.05.
+
+The authors theorize that the relationship between term limits and party
+contributions is caused by a desire from political parties to fill seats with
+ideologically consistent legislators. Specifically, the political parties see
+term limits as a way to gain more political influence and consistent voting. On
+the other hand, the authors theorize that PACs main goal is to gain access to
+legislators and therefore are less willing to spend money on term limited
+legislators.
+
+The coefficient on the interaction of term limits and legislative
+professionalism is positive and statistically significant in both the pooled
+polarization model and the party contributions model. This suggests that the
+effect of term limits on these two measures is greater in more professional
+legislatures.
+
+The authors theorize that this is because legislators in more professional
+settings typically have more knowledge and expertise than those in less
+professional settings. Therefore, the implementation of term limits forces these
+experienced legislators out of office and replaces them with significantly less
+qualified, and typically more ideologically consistent, legislators. This means
+that the effect of term limits will have a greater magnitude in professional
+legislatures. The interaction between term limits and legislative
+professionalism is presented graphically in figure 1.
+
+### Recreation of Figure 1:  Effect of Term Limits over Legislative Professionalism
+
+```{r fig1, warning=F, echo=F, message=F}
+
+logout
+
+```
+
+This graph show that as logged legislative professionalism increases, the
+marginal effect of term limits on political polarization also increases. As the
+authors theorized, the effect of term limits is greatest in professional
+legislatures.
+
+## Model Robustness Checks
+
+to confirm the relationship between term limits and political polarization, the authors run models with additional covariates as a robustness check. The additional covariates include state level variables such as logged population, per capita income, unemployment rate, percent foreign born, and Gini coefficient. Results are presented in Table B.3.
+
+```{r, additional_covariates_model, eval=F}
+
+# Additional Covariates Model: 
+
+ec_senate_cov <- felm(s_diffs~term_limit_temp
+                      +divided_gov+legprofscore
+                      +temp_abs_diff+gov_party
+                      +logpop+pc_income
+                      +unemploy+pct_fb
+                      +gini
+                      |state+year|0|state
+                      ,data=pol_dat)
+
+```
+
+### Recreation of Table B.3: Term Limits and Polarization: Additional Covariate Control
+
+```{r tabb3, warning=F, echo=F}
+
+extra_controls_sg_recreate <- stargazer(ec_pooled_cov,ec_house_cov,ec_senate_cov,
+                                        type = "text",
+                               add.lines = list(c("State Fixed Effects","Yes","Yes","Yes","Yes","Yes","Yes"),
+                                                c("Year Fixed Effects","Yes","Yes","Yes","Yes","Yes","Yes"),
+                                                c("Projected R Squared",round(summary(ec_pooled_cov)$P.r.squared,3)
+                                                  ,round(summary(ec_house_cov)$P.r.squared,3)
+                                                  ,round(summary(ec_senate_cov)$P.r.squared,3))),
+                               notes.append = FALSE,notes.label = "",
+                               notes="",
+                               omit.stat = c("rsq", "f", "ser","adj.rsq"),font.size = "footnotesize",
+                               star.char=c("*","**"),star.cutoffs = c(0.10,0.05),digits=3,digits.extra=0,
+                               dep.var.caption="Polarization",table.placement = "!ht",
+                               dep.var.labels = c("Pooled","House","Senate"),
+                               covariate.labels=c("Term Limits","Divided Gov.","ln(Leg. Professionalism)","Party Competitiveness","Democratic Governor"
+                                                  ,"ln(Population)","Per Capita Income","Unemployment Rate"
+                                                  ,"Percent Foreign Born","State Gini Coefficient"),
+                               label="extra_covariates",
+                               table.layout ="-ld-#-t-as-n",
+                               title="Term Limits and Polarization: Additional Covariate Control",
+                               out = "figures/extra_controls_sg_recreate.txt",
+                               no.space = T)
+
+```
+
+As seen above, the coefficient on term limits continues to be positive and
+statistically significant at an alpha level of 0.05 for the pooled data and
+lower chamber data. This suggests that the effect of term limits is robust to a
+variety of additional covariates.
+
+# Extension
+
+# Conclusion 
+
+# Bibliography
+
+Olson, Michael P, & Rogowski, Jon C. (2020). Legislative Term Limits and Polarization. The Journal of Politics, 82(2), 572-586.
+Peverill Squire. (1992). Legislative Professionalization and Membership Diversity in State Legislatures. Legislative Studies Quarterly,    17(1), 69-79.
+Peverill Squire. (2017). A Squire Index Update. State Politics & Policy Quarterly, 17(4), 361-371.
+Shor, Boris, & Mccarty, Nolan. (2011). The Ideological Mapping of American Legislatures. The American Political Science Review, 105(3),    530-551.

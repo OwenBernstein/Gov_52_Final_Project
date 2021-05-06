@@ -1,0 +1,22 @@
+
+Term Limits, Legislative Professionalism, and Party Influence
+-------------------------------------------------------------------------------------------
+                                                     Dependent variable:                   
+                                  ---------------------------------------------------------
+                                  Pooled Polarization Party Contributions PAC Contributions
+-------------------------------------------------------------------------------------------
+                                          (1)                 (2)                (3)       
+-------------------------------------------------------------------------------------------
+Term Limits                             0.342**             0.080**            -0.136      
+                                        (0.164)             (0.040)            (0.086)     
+ln(Leg. Professionalism)                 0.052               0.065             -0.028      
+                                        (0.050)             (0.040)            (0.034)     
+Term Limits X ln(Professionalism)       0.141*              0.036*             -0.053      
+                                        (0.081)             (0.021)            (0.043)     
+Controls                                  Yes                 Yes                Yes       
+State Fixed Effects                       Yes                 Yes                Yes       
+Year Fixed Effects                        Yes                 Yes                Yes       
+Projected R Squared                      0.084               0.060              0.040      
+Observations                              987                 398                398       
+-------------------------------------------------------------------------------------------
+                                                                                           
