@@ -76,4 +76,4 @@ logout <- continuous_margeff_plot(model=log_legprof,base_coef="house_term_limit"
   labs(title = "Effect of Term Limits over Legislative Professionalism",
        y = "Marginal Effect of Term Limits on Political Polarization")
 
-
+ggsave("figures/logout.pdf")

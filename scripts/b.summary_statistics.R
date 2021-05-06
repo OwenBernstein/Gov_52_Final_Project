@@ -38,8 +38,9 @@ sumstat_sg_recreate <- stargazer(pol_dat[,c("l_diffs","house_term_limit","divide
                         title="Summary Statistics of Key Variables",
                         table.layout ="-c-b-",table.placement = "!ht",
                         label="summary_stats",
-                        no.space = T)
+                        no.space = T,
+                        out = "figures/sumstat_sg_recreate.txt")
   
   
 sumstat_gt %>%
-    gtsave("sumstat_gt.pdf", path = "figures")
+    gtsave("sumstat_gt.pdf", path = "figures", zoom = 0.3)
