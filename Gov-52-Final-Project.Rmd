@@ -412,7 +412,15 @@ variety of additional covariates.
 
 # Bibliography
 
+\setlength{\parindent}{-0.2in}
+\setlength{\leftskip}{0.2in}
+\setlength{\parskip}{8pt}
+\noindent
+
 Olson, Michael P, & Rogowski, Jon C. (2020). Legislative Term Limits and Polarization. The Journal of Politics, 82(2), 572-586.
-Peverill Squire. (1992). Legislative Professionalization and Membership Diversity in State Legislatures. Legislative Studies Quarterly,    17(1), 69-79.
+
+Peverill Squire. (1992). Legislative Professionalization and Membership Diversity in State Legislatures. Legislative Studies Quarterly, 17(1), 69-79.
+
 Peverill Squire. (2017). A Squire Index Update. State Politics & Policy Quarterly, 17(4), 361-371.
-Shor, Boris, & Mccarty, Nolan. (2011). The Ideological Mapping of American Legislatures. The American Political Science Review, 105(3),    530-551.
+
+Shor, Boris, & Mccarty, Nolan. (2011). The Ideological Mapping of American Legislatures. The American Political Science Review, 105(3), 530-551.

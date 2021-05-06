@@ -1,0 +1,11 @@
+
+Summary Statistics of Key Variables
+=============================================================
+Statistic                 Mean  Median  Min    Max   St. Dev.
+-------------------------------------------------------------
+Legislative Polarization 1.439  1.398  0.128  3.608   0.502  
+Term Limits              0.201    0      0      1     0.401  
+Divided Gov.             0.492    0      0      1     0.500  
+ln(Leg. Professionalism) -1.786 -1.772 -3.612 -0.464  0.583  
+Party Competitiveness    13.469 11.029 0.500  41.137  8.941  
+-------------------------------------------------------------
