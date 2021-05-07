@@ -46,5 +46,31 @@ and a bibliography.
 		This script generates results presented in Table 3 and Figure 1.
 		It creates various models and figures and presents them as
 		stargazer plots and ggplots. 
+		
+  6) "e.extension_analysis.R"
+    This script generates results presented in Table 4 and Table 5.
+    It creates new models using lagged data and regional data. 
+		
+# Packages and Computational Environment##################################
 	
+R version 4.0.2 (2020-06-22) -- "Taking Off Again"
 
+To run this code the following packages are required:
+
+tidyverse
+webshot
+gt
+readstata13
+foreign
+data.table
+tidyr
+stringi
+stringr
+dplyr
+multiwayvcov
+lmtest
+stargazer
+ggplot2
+DataCombine
+lfe
+Matching

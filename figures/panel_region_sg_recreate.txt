@@ -1,0 +1,17 @@
+
+Term Limits and Polarization With Region Fixed Effects
+--------------------------------------------------------------------------------------------------
+                                                        Polarization                              
+                          ------------------------------------------------------------------------
+                                   Pooled                   House                  Senate         
+--------------------------------------------------------------------------------------------------
+                              (1)          (2)         (3)         (4)         (5)         (6)    
+--------------------------------------------------------------------------------------------------
+Term Limits                 0.118**      0.118**     0.150**     0.150**      0.039       0.039   
+                            (0.052)      (0.052)     (0.048)     (0.048)     (0.090)     (0.090)  
+State Fixed Effects           Yes          Yes         Yes         Yes         Yes         Yes    
+Year Fixed Effects            Yes          Yes         Yes         Yes         Yes         Yes    
+Region Fixed Effects           No          Yes         No          Yes         No          Yes    
+Projected R Squared          0.039        0.039       0.054       0.054       0.002       0.002   
+--------------------------------------------------------------------------------------------------
+      Note. Linear Regression Coeffcients with standard errors clustered on states in parentheses.
