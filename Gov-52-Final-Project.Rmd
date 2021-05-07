@@ -47,9 +47,9 @@ source("scripts/e.extension_analysis.R")
 ```
 
 In their paper “Legislative Term Limits and Polarization,” Michael Olson and Jon
-Rogowski^[Olson, Michael P, & Rogowski, Jon C. (2020). Legislative Term Limits and Polarization. The Journal of Politics, 82(2), 572-586.] explore the causal impact of the adoption of legislative term limits on
+Rogowski explore the causal impact of the adoption of legislative term limits on
 representation in state governments.^[Replication data and code for this report
-can be accessed in the Harvard Dataverse at https://doi.org/10.7910/DVN/GDZTK8]
+can be accessed on github at https://github.com/OwenBernstein/Gov_52_Final_Project. The orignal report's data and code can be accessed in the Harvard Dataverse at https://doi.org/10.7910/DVN/GDZTK8] ^[Olson, Michael P, & Rogowski, Jon C. (2020). Legislative Term Limits and Polarization. The Journal of Politics, 82(2), 572-586.]
 The paper specifically asks how legislative term limits affect representation
 and polarization and if this relationship is modified by the professionalism of
 the legislature. The authors hypothesize that the implementation of term limits
